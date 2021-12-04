@@ -22,7 +22,7 @@ CREATE TABLE login_attempt (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPRESSED COMMENT='for tracking login attempt data';
 
 -- oauth server schema
--- see https://github.com/spring-projects/spring-authorization-server/blob/main/samples/default-authorizationserver/src/main/java/sample/config/AuthorizationServerConfig.java
+-- see https://github.com/spring-projects/spring-authorization-server/TEXT/main/samples/default-authorizationserver/src/main/java/sample/config/AuthorizationServerConfig.java
 CREATE TABLE oauth2_registered_client (
                                           id varchar(100) NOT NULL,
                                           client_id varchar(100) NOT NULL,
@@ -73,21 +73,21 @@ CREATE TABLE oauth2_authorization (
                                       authorization_grant_type varchar(100) NOT NULL,
                                       attributes varchar(4000) DEFAULT NULL,
                                       state varchar(500) DEFAULT NULL,
-                                      authorization_code_value blob DEFAULT NULL,
+                                      authorization_code_value BLOB DEFAULT NULL,
                                       authorization_code_issued_at timestamp,
                                       authorization_code_expires_at timestamp,
                                       authorization_code_metadata varchar(2000) DEFAULT NULL,
-                                      access_token_value blob DEFAULT NULL,
+                                      access_token_value BLOB DEFAULT NULL,
                                       access_token_issued_at timestamp,
                                       access_token_expires_at timestamp,
                                       access_token_metadata varchar(2000) DEFAULT NULL,
                                       access_token_type varchar(100) DEFAULT NULL,
                                       access_token_scopes varchar(1000) DEFAULT NULL,
-                                      oidc_id_token_value blob DEFAULT NULL,
+                                      oidc_id_token_value BLOB DEFAULT NULL,
                                       oidc_id_token_issued_at timestamp,
                                       oidc_id_token_expires_at timestamp,
                                       oidc_id_token_metadata varchar(2000) DEFAULT NULL,
-                                      refresh_token_value blob DEFAULT NULL,
+                                      refresh_token_value BLOB DEFAULT NULL,
                                       refresh_token_issued_at timestamp,
                                       refresh_token_expires_at timestamp,
                                       refresh_token_metadata varchar(2000) DEFAULT NULL,
