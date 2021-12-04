@@ -1,0 +1,27 @@
+version: "3.3"
+
+services:
+
+  db:
+    image: mariadb:10.4.8
+    volumes:
+      - ./mariadb/:/var/lib/mariadb/
+    networks:
+      - mariadbnet
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: outboundengine
+      MYSQL_USER: oe_user
+      MYSQL_PASSWORD: oe_pwd
+    command: --default-time-zone=+00:000 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --auto_increment_offset=3 --auto_increment_increment=3
+    ports:
+      - 3306:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--silent", "--password=root"]
+      interval: 1m30s
+      timeout: 60s
+      retries: 6
+
+networks:
+  mariadbnet:
+    driver: bridge

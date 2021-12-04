@@ -1,0 +1,84 @@
+plugins {
+    // https://docs.gradle.org/current/userguide/java_plugin.html
+    id 'java'
+
+    // https://plugins.gradle.org/plugin/org.flywaydb.flyway
+    id 'org.flywaydb.flyway' version '8.2.0'
+
+    // https://plugins.gradle.org/plugin/com.avast.gradle.docker-compose
+    id "com.avast.gradle.docker-compose" version "0.14.11"
+}
+
+version '1.0.0'
+
+// this needs to be here for global plugin refs
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
+}
+
+configurations {
+    db
+}
+
+dependencies {
+    implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '2.3.0'
+
+    //to get ant.sql working
+    db group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '2.3.0'
+}
+
+/**
+ * mariadb container
+ * https://github.com/avast/gradle-docker-compose-plugin
+ * see nested config
+ */
+dockerCompose {
+    mariadb {
+        useComposeFiles = ['mariadb-docker-compose.yml']
+    }
+}
+
+flyway {
+    url = "jdbc:mariadb://${db_host}:${db_port}/?tcpKeepAlive=TRUE&characterEncoding=UTF-8"
+    user = "${db_username}"
+    password = "${db_password}"
+    schemas = ["${db_name}"]
+    locations = ["filesystem:$rootProject.projectDir/src/main/sql/scripts"]
+    placeholderReplacement = false
+}
+
+/**
+ * task to drop and reload the DB
+ * https://docs.gradle.org/current/userguide/tutorial_using_tasks.html
+ * https://discuss.gradle.org/t/how-to-set-up-the-sql-statement-when-calling-ant-sql-task/5743
+ * https://docs.gradle.org/current/userguide/tutorial_using_tasks.html
+ * need to quote the name to leverage dot notation
+ */
+task dbReset {
+    group = 'db'
+    description 'task to drop and reload the DB'
+    dependsOn flywayClean,flywayMigrate
+
+    // this is to have the trigger sps view load after patch scripts
+    doLast {
+        ant.echo("project.gradle.gradleUserHomeDir:" + "$project.gradle.gradleUserHomeDir")
+        ant.echo("rootProject.projectDir:" + "$rootProject.projectDir")
+        ant.echo("url:" + "jdbc:mariadb://${db_host}:${db_port}/${db_name}")
+
+        ant.sql(classpath: configurations.db.asPath,
+                driver: 'org.mariadb.jdbc.Driver',
+                url: "jdbc:mariadb://${db_host}:${db_port}/${db_name}?tcpKeepAlive=TRUE&characterEncoding=UTF-8",
+                userid: "${db_username}",
+                password: "${db_password}",
+                showWarnings: true,
+                delimiter: ';;',
+                delimitertype: 'normal'
+        ) {
+            transaction(src: "$rootProject.projectDir/src/main/sql/data/V1__users.sql")
+        }
+    }
+}
